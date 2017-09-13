@@ -96,8 +96,9 @@ class AddWorkType(tk.LabelFrame):
         self.gainupset = ScalableEntrySet(self,entname='獲得量アップ条件',xpos=5,ypos=0)
         self.needtimeset = EntrySet(self,entname='必要時間',xpos=7,ypos=0)
         self.needitemset = ItemEntrySet(self,entname1='必要アイテム',entname2='数量',xpos=8,ypos=0)
-        self.entrybutton = tk.Button(self,text='登録',command=lambda:self.AddWorkTypeToDict(workdict)).grid(row=0,column=10)
-        self.entrybutton = tk.Button(self,text='test',command=lambda:self.Test(workdict)).grid(row=1,column=10)
+        self.gettableset = ScalableEntrySet(self,entname='獲得可能アイテム',xpos=10,ypos=0)
+        self.entrybutton = tk.Button(self,text='登録',command=lambda:self.AddWorkTypeToDict(workdict)).grid(row=0,column=12)
+        self.entrybutton = tk.Button(self,text='test',command=lambda:self.Test(workdict)).grid(row=1,column=12)
     def AddWorkTypeToDict(self,workdict):
         workname=self.nameset.entry.get()
         workdict[workname] = {}
@@ -113,11 +114,30 @@ class AddWorkType(tk.LabelFrame):
         workdict[workname]["必要アイテム"] = {}
         for x,y in self.needitemset.namenumset:
             workdict[workname]["必要アイテム"][x.get()] = y.get()
+        workdict[workname]["獲得可能アイテム"] = []
+        for x in self.gettableset.entrylist:
+            workdict[workname]['獲得可能アイテム'].append(x.get())
         workdict[workname]["作業データ"] = []
 
     def Test(self,workdict):
         print(workdict)
         print(tuple(workdict.keys()))
+
+class AddGettable(tk.LabelFrame):
+    def __init__(self,master=None,workdict=None):
+        tk.LabelFrame.__init__(self,master,text='獲得可能アイテム追加')
+        self.worklist = ComboSet(self,entname='作業名',xpos=0,ypos=0,workdict=workdict)
+        self.gettableset = ScalableEntrySet(self,entname='獲得可能アイテム',xpos=1,ypos=0)
+        self.entrybutton = tk.Button(self,text='追加',command=lambda:self.EntryGettable(workdict)).grid(row=0,column=3)
+        self.entrybutton2 = tk.Button(self,text='test',command=lambda:self.Test(workdict)).grid(row=1,column=3)
+    def Test(self,workdict):
+        print(workdict)
+        print(tuple(workdict.keys()))
+        print(self.worklist.combobox.get())
+    def EntryGettable(self,workdict=None):
+        workname = self.worklist.combobox.get()
+        for x in self.gettableset.entrylist:
+            workdict[workname]['獲得可能アイテム'].append(x.get())
 
 class AddLostData(tk.LabelFrame):
     def __init__(self,master=None,workdict=None,nowworking=None):
@@ -166,12 +186,15 @@ class AddGetData(tk.LabelFrame):
         for sucup in workdict[worktype]['成功率アップ条件']:
             print(sucup)
             self.sucupset.AddEntry(self,xpos=2,ypos=0)
-            print(len(self.sucupset.namenumset))
             self.sucupset.namenumset[len(self.sucupset.namenumset)-1][0].insert(tk.END,sucup)
         for gainup in workdict[worktype]['獲得量アップ条件']:
             print(gainup)
             self.gainupset.AddEntry(self,xpos=4,ypos=0)
             self.gainupset.namenumset[len(self.gainupset.namenumset)-1][0].insert(tk.END,gainup)
+        for gotitem in workdict[worktype]['獲得可能アイテム']:
+            print(gotitem)
+            self.gotitemset.AddEntry(self,xpos=6,ypos=0)
+            self.gotitemset.namenumset[len(self.gotitemset.namenumset)-1][0].insert(tk.END,gotitem)
     def EntryNowWork(self,nowworking=None,workdict=None):
         tmpdict = {}
         tmpx = int(self.worklist.combobox.get().split(':')[0])
@@ -203,10 +226,12 @@ class InputField(tk.LabelFrame):
     def __init__(self,master=None,workdict=None,nowworking=None):
         tk.LabelFrame.__init__(self,master, text='データ入力')
         self.add_work_type_field = AddWorkType(self,workdict)
+        self.add_add_gettable_to_workdict_field = AddGettable(self,workdict)
         self.add_work_lost_data_field = AddLostData(self,workdict,nowworking)
         self.add_work_get_data_field = AddGetData(self,workdict,nowworking)
         self.savebutton = tk.Button(self,text='保存',command=lambda:self.PickleDatas(workdict=workdict,nowworking=nowworking))
         self.add_work_type_field.pack()
+        self.add_add_gettable_to_workdict_field.pack()
         self.add_work_lost_data_field.pack()
         self.add_work_get_data_field.pack()
         self.savebutton.pack()
@@ -228,7 +253,7 @@ try:
 except:
     with open('datas.pkl','w') as wf:
         wf.write('')
-        pickled = ('','')
+        pickled = ({},[])
 workdict = pickled[0]
 nowworking = pickled[1]
 mainframe = MainFrame(workdict=workdict,nowworking=nowworking)
