@@ -160,14 +160,19 @@ class AddLostData(tk.LabelFrame):
             self.lostitemset.AddEntry(self,xpos=2,ypos=0)
             self.lostitemset.namenumset[len(self.lostitemset.namenumset)-1][0].insert(tk.END,itemname)
     def EntryNowWork(self,nowworking=None):
-        tmpdict = {}
-        tmpdict["作業名"] = self.worklist.combobox.get()
-        tmpdict['回数'] = self.repeatnum.entry.get()
-        tmpdict["消費アイテム"] = {}
-        for x,y in self.lostitemset.namenumset:
-            tmpdict["消費アイテム"][x.get()] = y.get()
-        nowworking.append(tmpdict)
-        print(nowworking)
+        if (self.repeatnum.entry.get() != ''):
+            tmpdict = {}
+            tmpdict["作業名"] = self.worklist.combobox.get()
+            tmpdict['回数'] = self.repeatnum.entry.get()
+            self.repeatnum.entry.delete(0,tk.END)
+            tmpdict["消費アイテム"] = {}
+            for x,y in self.lostitemset.namenumset:
+                tmpdict["消費アイテム"][x.get()] = y.get()
+                y.delete(0,tk.END)
+            nowworking.append(tmpdict)
+            print(nowworking)
+        else:
+            print('回数が入力されていない')
 
 
 class AddGetData(tk.LabelFrame):
